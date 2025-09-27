@@ -8,19 +8,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $phone    = trim($_POST['phone']);
     $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
 
-    $sql = "INSERT INTO voters (name, email, phone, password) VALUES (?, ?, ?, ?)";
-    $stmt = $conn->prepare($sql);
-
-    if ($stmt) {
-        $stmt->bind_param("ssss", $name, $email, $phone, $password);
-        if ($stmt->execute()) {
-            header("Location: login.php");
-            exit();
-        } else {
-            $message = "Error: " . $stmt->error;
-        }
+    // ✅ Server-side validation for Indian 10-digit mobile number
+    if (!preg_match('/^[6-9]\d{9}$/', $phone)) {
+        $message = "Please enter a valid 10-digit Indian mobile number.";
     } else {
-        $message = "Database error: " . $conn->error;
+        // Always prepend +91
+        $phone = '+91' . $phone;
+
+        $sql = "INSERT INTO voters (name, email, phone, password) VALUES (?, ?, ?, ?)";
+        $stmt = $conn->prepare($sql);
+
+        if ($stmt) {
+            $stmt->bind_param("ssss", $name, $email, $phone, $password);
+            if ($stmt->execute()) {
+                header("Location: login.php");
+                exit();
+            } else {
+                $message = "Error: " . $stmt->error;
+            }
+        } else {
+            $message = "Database error: " . $conn->error;
+        }
     }
 }
 ?>
@@ -40,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Register to Vote</h2>
 
     <?php if (!empty($message)): ?>
-      <div class="mb-4 text-center text-sm font-medium <?= strpos($message, 'success') !== false ? 'text-green-600' : 'text-red-600' ?>">
+      <div class="mb-4 text-center text-sm font-medium <?= strpos($message, 'valid') !== false ? 'text-red-600' : 'text-green-600' ?>">
         <?= htmlspecialchars($message) ?>
       </div>
     <?php endif; ?>
@@ -58,8 +66,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
       <div>
         <label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
-        <input type="text" name="phone" id="phone" required
-               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <div class="flex">
+          <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-100 text-gray-600 text-sm">
+            +91
+          </span>
+          <input type="text" name="phone" id="phone" required
+                 pattern="^[6-9]\d{9}$"
+                 maxlength="10"
+                 title="Enter a valid 10-digit Indian mobile number"
+                 class="w-full px-4 py-2 border border-gray-300 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
       </div>
       <div>
         <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
