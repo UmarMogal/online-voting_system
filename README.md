@@ -1,16 +1,4 @@
 
-SOFTWARE REQUIREMENTS
-Operating System : Any version of Windows NT family (4.0 &above)
- 
-Frontend :
-html5   css3   javascript   bootstrap
-
-Backend :
-php
-
-Database :
-mysql
-
 # Online Voting System in PHP & MySQL (Minor Project)
 
 ![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)
